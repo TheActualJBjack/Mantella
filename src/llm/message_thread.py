@@ -55,6 +55,13 @@ class message_thread():
     def get_openai_messages(self) -> list[ChatCompletionMessageParam]:
         return message_thread.transform_to_openai_messages(self.__messages)
 
+    @utils.time_it
+    def get_gemini_messages(self) -> list[dict]:
+        result = []
+        for m in self.__messages:
+            result.append(m.get_gemini_message())
+        return result
+
     def add_message(self, new_message: UserMessage | AssistantMessage | ImageMessage | ImageDescriptionMessage):
         self.__messages.append(new_message)
 

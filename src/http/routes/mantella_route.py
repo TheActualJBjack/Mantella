@@ -8,7 +8,7 @@ from src.games.fallout4 import Fallout4
 from src.games.gameable import Gameable
 from src.games.skyrim import Skyrim
 from src.output_manager import ChatManager
-from src.llm.llm_client import LLMClient
+from src.llm.llm_client import LlmClientFactory
 from src.game_manager import GameStateManager
 from src.http.routes.routeable import routeable
 from src.http.communication_constants import communication_constants as comm_consts
@@ -58,7 +58,7 @@ class mantella_route(routeable):
         if self._config.tts_service == TTSEnum.PIPER:
             tts = Piper(self._config, game)
 
-        llm_client = LLMClient(self._config, self.__secret_key_file, self.__image_secret_key_file)
+        llm_client = LlmClientFactory(self._config, self.__secret_key_file, self.__image_secret_key_file)
         
         chat_manager = ChatManager(self._config, tts, llm_client)
         self.__game = GameStateManager(game, chat_manager, self._config, self.__language_info, llm_client, self.__stt_secret_key_file, self.__secret_key_file)

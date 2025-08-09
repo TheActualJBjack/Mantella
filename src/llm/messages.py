@@ -67,6 +67,12 @@ class Message(ABC):
         pass
 
     @abstractmethod
+    def get_gemini_message(self) -> dict:
+        """Returns the message in a format suitable for the Gemini API.
+        """
+        pass
+
+    @abstractmethod
     def get_formatted_content(self) -> str:
         pass
     
@@ -86,6 +92,9 @@ class SystemMessage(Message):
 
     def get_openai_message(self) -> ChatCompletionMessageParam:
         return {"role":"system", "content": self.get_formatted_content(),}
+
+    def get_gemini_message(self) -> dict:
+        return {"role": "model", "parts": [{"text": self.get_formatted_content()}]}
     
     def get_dict_formatted_string(self) -> str:
         dictionary = {"role":"system", "content": self.get_formatted_content(),}
@@ -127,6 +136,9 @@ class AssistantMessage(Message):
 
     def get_openai_message(self) -> ChatCompletionMessageParam:
         return {"role":"assistant", "content": self.get_formatted_content(),}
+
+    def get_gemini_message(self) -> dict:
+        return {"role": "model", "parts": [{"text": self.get_formatted_content()}]}
     
     def get_dict_formatted_string(self) -> str:
         dictionary = {"role":"assistant", "content": self.get_formatted_content(),}
@@ -158,6 +170,9 @@ class UserMessage(Message):
     
     def get_openai_message(self) -> ChatCompletionMessageParam:
         return {"role":"user", "content": self.get_formatted_content(),}
+
+    def get_gemini_message(self) -> dict:
+        return {"role": "user", "parts": [{"text": self.get_formatted_content()}]}
     
     def get_dict_formatted_string(self) -> str:
         dictionary = {"role":"user", "content": self.get_formatted_content(),}
@@ -214,6 +229,14 @@ class ImageMessage(Message):
                 }
             ]
         }
+
+    def get_gemini_message(self) -> dict:
+        import base64
+        image_parts = {
+            "mime_type": "image/jpeg",
+            "data": base64.b64decode(self.encoded_image)
+        }
+        return {"role": "user", "parts": [self.text_content, image_parts]}
     
 class ImageDescriptionMessage(Message):
     """An image description message, similar to a user message but interacted with by the conversation object"""
@@ -222,7 +245,7 @@ class ImageDescriptionMessage(Message):
         self.text_content = text
 
     def get_formatted_content(self):
-        return self.Text
+        return self.text_content
 
     def get_dict_formatted_string(self):
         dictionary = {"role":"user", "content": self.get_formatted_content(),}
@@ -239,3 +262,6 @@ class ImageDescriptionMessage(Message):
                 }
             ]
         }
+
+    def get_gemini_message(self) -> dict:
+        return {"role": "user", "parts": [{"text": f"This is description of the scene is only to give context to the conversation and is from the point of view of the player: {self.text_content}"}]}
